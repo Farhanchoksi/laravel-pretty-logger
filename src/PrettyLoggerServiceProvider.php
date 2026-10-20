@@ -3,7 +3,8 @@
 namespace Farhanchoksi\PrettyLogger;
 
 use Farhanchoksi\PrettyLogger\Http\Middleware\PrettyLoggerMiddleware;
-use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Contracts\Http\Kernel as KernelContract;
+use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Illuminate\Support\ServiceProvider;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
@@ -52,9 +53,10 @@ class PrettyLoggerServiceProvider extends ServiceProvider
         }
 
         // Push the middleware onto the global stack so every HTTP request is logged.
-        // Pushing the class name keeps the middleware resolved lazily by the container.
-        /** @var \Illuminate\Foundation\Http\Kernel $kernel */
-        $kernel = $this->app->make(Kernel::class);
+        // The contract is resolved because only that binding is a singleton inside
+        // the container; the concrete Foundation kernel is used just for its type.
+        /** @var HttpKernel $kernel */
+        $kernel = $this->app->make(KernelContract::class);
         $kernel->pushMiddleware(PrettyLoggerMiddleware::class);
     }
 }
